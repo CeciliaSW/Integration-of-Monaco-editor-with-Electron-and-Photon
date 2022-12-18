@@ -1,0 +1,19 @@
+{
+  "name": "editor",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "dev": "electron app.js"
+  },
+  "keywords": [],
+  "author": "Arnulfo Gaytán, Cecilia Peña, Rogelio Ceballos.",
+  "license": "ISC",
+  "dependencies": {
+    "@monaco-editor/react": "^0.0.2",
+    "bootstrap": "^5.2.2",
+    "electron": "^21.2.0",
+    "monaco-editor": "^0.17.0",
+    "monaco-loader": "^1.0.0"
+  }
+}

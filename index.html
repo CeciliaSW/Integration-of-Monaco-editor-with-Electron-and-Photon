@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset = "UTF-8">
+        <title>Editor de código</title>
+        <link rel="stylesheet" href="./css/photon.css">
+        <link rel="stylesheet" href="./node_modules/bootstrap/dist/css/bootstrap.css"/>
+    </head>
+
+    <body style="background-color: rgb(50, 50, 50);">
+    <header class="toolbar toolbar-header" style="-webkit-app-region: drag">
+        <div style="-webkit-app-region: no-drag">
+            <a class="icon icon-record" style="color:#fc605b; float: left;margin-left: 10px;line-height: 25px;-webkit-app-region: no-drag;font-size: 20px;" id="close-btn"></a>
+            <a class="icon icon-record" style="color:#fdbc40; float: left;margin-left: 10px;line-height: 25px;-webkit-app-region: no-drag;font-size: 20px;" id="min-btn"></a>
+            <a class="icon icon-record" style="color:#34c84a; float: left;margin-left: 10px;line-height: 25px;-webkit-app-region: no-drag;font-size: 20px;" id="max-btn"></a>
+        </div>
+    </header>
+
+    <h2 id="textoLenguaje" class="text-center" style="padding-top: 20px; color: white;">Editor de código</h2>
+
+    <div style="padding: 50px;" class="container text-center">
+        <br>
+
+        <div class="button-group"> 
+            <div class="row" style="margin-left: 155px;">
+            <select id="optLenguaje" class="form-select form-select-sm" style="background-color: #6c757d; color: white; width: 200px;" aria-label="Default select example">
+                <option value="lenguaje">Iniciar</option>
+                <option value="python">Python</option>
+            </select> 
+            <div class="col">
+                <button id="accept" onclick="changelang()" type="submit" class="btn btn-secondary rounded-pill" style="margin-right: 170px;">Aceptar</button>
+            </div>
+            </div>
+        </div>
+
+        <br>
+        <br>
+        <div class="containerDiv" id="contenedor">
+        <textarea 
+        name="txtContenido"
+        id="txtContenido" 
+        cols="30" rows="10" style="width: 600px; height: 217px; background-color: #212121; font-family:'Courier New', Courier, monospace; color:white;">
+        </textarea>
+        </div>
+        <br>
+
+        <button id="open" onclick="onAbrir()" type="button" class="btn btn-secondary rounded-pill">Abrir</button>
+
+        <button id="save" onclick="onGuardar()" type="button" class="btn btn-secondary rounded-pill">Guardar</button>
+
+        <button id="ex"  onclick="onEjecutar()" type="button" class="btn btn-primary rounded-pill" disabled>Ejecutar</button>
+
+        <div class="containerDiv2" id="entorno"></div>
+    </div>
+
+    <script src="./js/btn_actions.js" charset="utf-8"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js" ></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.min.js" integrity="sha384-Atwg2Pkwv9vp0ygtn1JAojH0nYbwNJLPhwyoVbhoPwBhjQPR5VtM2+xf0Uwh9KtT" crossorigin="anonymous"></script>
+    <script>
+        const {ipcRenderer} =  require('electron');
+        
+        window.addEventListener('contextmenu',(e)=> {
+        e.preventDefault();
+        ipcRenderer.send('show-context-menu');
+        });
+
+        ipcRenderer.on('context-menu-command',(e,command)=> {
+        alert(command);
+        });
+
+        onAbrir = () => {
+            ipcRenderer.send('openFile');
+        }
+
+        ipcRenderer.on('datosarchivo', (event, args) => {
+            document.getElementById('txtContenido').value =  args;
+        });
+
+        onGuardar = () => {
+            ipcRenderer.send('saveFile', document.getElementById('txtContenido').value);
+        }
+
+        require('./js/languages.js')
+        const loader = require('monaco-loader')
+
+        changelang = () => {
+            var lenguaje = document.getElementById("optLenguaje").value;
+
+            if(lenguaje === "lenguaje"){
+                alert("No has iniciado el editor.");
+                return;
+            }
+
+            if (lenguaje!=null){
+                alert("Editor de: "+lenguaje+".")
+
+                document.getElementById("textoLenguaje").innerHTML=lenguaje+"- Editor de código"
+                var code = document.getElementById("txtContenido").value;
+                document.getElementById("txtContenido").remove();
+
+                const agregarCSS = css => document.head.appendChild(document.createElement("style")).innerHTML=css;
+                agregarCSS(".containerDiv{ height: 250px; }")
+
+                document.getElementById("optLenguaje").disabled = true;
+                document.getElementById("accept").disabled = true;
+                document.getElementById("open").disabled = true;
+                document.getElementById("save").disabled = true;
+                document.getElementById("ex").disabled = false;
+
+                    loader().then((monaco) => {
+                        const editor = monaco.editor.create(document.getElementById('contenedor'), {
+                        language: lenguaje,
+                        value: code,
+                        theme: 'vs-dark',
+                        automaticLayout: true,
+                    })
+                    })
+                    monaco.editor.colorizeElement(editor)      
+            }
+            return code;
+        }
+
+        onEjecutar = () => {
+
+        const agregarCSS = css => document.head.appendChild(document.createElement("style")).innerHTML=css;
+        agregarCSS(".containerDiv2{ margin-top: 20px; height: 60px; background-color: #212121; color: white; font-family:'Courier New', Courier, monospace;}")
+
+        document.getElementById('entorno').innerHTML = 'Ejecutado.';
+
+        var child_process = require('child_process');
+        child_process.exec("start cmd.exe /K cd /D C:\Users\burbu\OneDrive\Escritorio\UDLSB\3er Semestre\Programación orientada a Aspectos\Actividades\ElectronJS_2P\P2_Editor_ACR_312\Python");
+        alert("Escribe py y el nombre de tu archivo para compilar.");
+    }
+</script>
+</body>
+</html>
